@@ -1,0 +1,42 @@
+# Auto-labeler configuration
+# Copy to: .github/labeler.yml
+#
+# Used by the pr-checks.yml workflow to auto-label PRs
+# based on which files were changed.
+
+frontend:
+  - changed-files:
+    - any-glob-to-any-file: 'src/**'
+
+backend:
+  - changed-files:
+    - any-glob-to-any-file: 'server/**'
+    - any-glob-to-any-file: 'api/**'
+
+docs:
+  - changed-files:
+    - any-glob-to-any-file: '**/*.md'
+    - any-glob-to-any-file: 'docs/**'
+
+ci:
+  - changed-files:
+    - any-glob-to-any-file: '.github/**'
+
+config:
+  - changed-files:
+    - any-glob-to-any-file: '*.json'
+    - any-glob-to-any-file: '*.yml'
+    - any-glob-to-any-file: '*.yaml'
+    - any-glob-to-any-file: '*.toml'
+
+styles:
+  - changed-files:
+    - any-glob-to-any-file: '**/*.css'
+    - any-glob-to-any-file: '**/*.scss'
+    - any-glob-to-any-file: 'tailwind.config.*'
+
+tests:
+  - changed-files:
+    - any-glob-to-any-file: '**/*.test.*'
+    - any-glob-to-any-file: '**/*.spec.*'
+    - any-glob-to-any-file: 'tests/**'

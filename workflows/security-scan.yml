@@ -1,0 +1,71 @@
+# Security Scanning - CodeQL + Dependency Audit
+# Copy to: .github/workflows/security-scan.yml
+#
+# Runs on pushes to main and weekly on Monday.
+# Scans for vulnerabilities in code and dependencies.
+
+name: Security Scan
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    # Run every Monday at 9am UTC
+    - cron: '0 9 * * 1'
+
+permissions:
+  security-events: write
+  contents: read
+
+jobs:
+  codeql:
+    name: CodeQL Analysis
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        # Customize: add languages your repo uses
+        language: [javascript-typescript]
+        # Options: javascript-typescript, python, go, ruby, etc.
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: ${{ matrix.language }}
+
+      - name: Autobuild
+        uses: github/codeql-action/autobuild@v3
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+
+  dependency-audit:
+    name: Dependency Audit
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Audit npm dependencies
+        if: hashFiles('package-lock.json') != ''
+        run: npm audit --audit-level=high || true
+        # Remove || true to fail on vulnerabilities
+
+      - name: Setup Python
+        if: hashFiles('requirements.txt') != ''
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Audit pip dependencies
+        if: hashFiles('requirements.txt') != ''
+        run: |
+          pip install pip-audit
+          pip-audit -r requirements.txt || true

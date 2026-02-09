@@ -1,0 +1,46 @@
+# Stale Bot - Auto-close inactive issues and PRs
+# Copy to: .github/workflows/stale-bot.yml
+#
+# Marks issues/PRs as stale after 30 days of inactivity.
+# Closes them 7 days after being marked stale.
+# Never closes issues labeled 'pinned' or 'security'.
+
+name: Stale Bot
+
+on:
+  schedule:
+    # Run daily at midnight UTC
+    - cron: '0 0 * * *'
+
+permissions:
+  issues: write
+  pull-requests: write
+
+jobs:
+  stale:
+    name: Close Stale Issues & PRs
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/stale@v9
+        with:
+          # Customize: days before marking stale
+          days-before-stale: 30
+          # Customize: days after stale before closing
+          days-before-close: 7
+          stale-issue-label: stale
+          stale-pr-label: stale
+          stale-issue-message: >
+            This issue has been automatically marked as stale because it has not had
+            activity in 30 days. It will be closed in 7 days if no further activity occurs.
+          stale-pr-message: >
+            This PR has been automatically marked as stale because it has not had
+            activity in 30 days. It will be closed in 7 days if no further activity occurs.
+          close-issue-message: >
+            This issue was closed automatically because it was stale for 7 days
+            with no activity.
+          close-pr-message: >
+            This PR was closed automatically because it was stale for 7 days
+            with no activity.
+          # Never close these labels
+          exempt-issue-labels: pinned,security,in-progress
+          exempt-pr-labels: pinned,security,in-progress

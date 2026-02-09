@@ -1,0 +1,58 @@
+# PR Checks - Labels, Size Warnings
+# Copy to: .github/workflows/pr-checks.yml
+#
+# Auto-labels PRs based on changed file paths.
+# Warns when PRs are too large (>500 lines).
+
+name: PR Checks
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, labeled, unlabeled]
+
+jobs:
+  label:
+    name: Auto-Label PR
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - name: Label by file path
+        uses: actions/labeler@v5
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          # Create .github/labeler.yml in your repo to define label rules:
+          # Example labeler.yml:
+          # frontend:
+          #   - changed-files:
+          #     - any-glob-to-any-file: 'src/**'
+          # backend:
+          #   - changed-files:
+          #     - any-glob-to-any-file: 'server/**'
+          # docs:
+          #   - changed-files:
+          #     - any-glob-to-any-file: '**/*.md'
+
+  size-check:
+    name: PR Size Warning
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check PR size
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { data: pr } = await github.rest.pulls.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.issue.number
+            });
+            const lines = pr.additions + pr.deletions;
+            if (lines > 500) {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: `**Large PR Warning** - This PR changes ${lines} lines. Consider breaking it into smaller PRs for easier review.`
+              });
+            }
